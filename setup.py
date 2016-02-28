@@ -1,56 +1,27 @@
-# -*- coding: utf-8 -*-
+from setuptools import setup, find_packages
+import sys, os
 
-import motor
-from torpc.server import RPCTCPServer
-from torpc.client import RPCClient
-from tornado import gen
-from tornado.ioloop import IOLoop 
-import tornado.web
+version = '0.1.0'
+README = os.path.join(os.path.dirname(__file__), 'README.md')
+long_description = open(README).read() + '\n\n'
 
-from json import dumps
-
-class RPCServerHandler(RPCTCPServer):
-    db = motor.MotorClient().test
-
-    def add(self, a, b):
-        return a + b
-
-    @gen.coroutine
-    def find(self, table_name):
-        res = None
-        if table_name:
-            res = yield self.db[table_name].find_one({}, {'_id': 0})
-        raise gen.Return(res)
-
-
-class RPCClientHandler(tornado.web.RequestHandler):
-    @tornado.web.asynchronous
-    @gen.coroutine
-    def get(self, func_name):
-        if func_name:
-            args = dict()
-            if func_name == 'add':
-                for arg in ("a", "b"):
-                    val = self.get_argument(arg, None)
-                    if val :
-                        args[arg] = int(val)
-            elif func_name == 'find':
-                args = {'table_name': self.get_argument('table_name', '')}
-            RPC_client = RPCClient()
-            try:
-                yield RPC_client.connect('127.0.0.1', 8890)
-                res = yield RPC_client.remote_call(func_name, **args)
-                self.finish(dumps(res))
-            except Exception, e:
-                print e
-
-if __name__ == "__main__":
-    server_app = tornado.web.Application([
-            (r'/(.*)', RPCClientHandler)
-            ])
-
-    print 'Listening on http://localhost:8889'
-    server_app.listen(8889)
-    server = RPCServerHandler()    
-    server.listen(8890)   
-    IOLoop.instance().start()
+setup(name='torpc',
+    version=version,
+    description=" Simple JSON RPC using the Tornado framework",
+    long_description=long_description,
+    classifiers=[
+        'Development Status :: 1 - Pre-Alpha',
+        'Intended Audience :: Developers',
+        'License :: OSI Approved :: MIT License',
+        'Programming Language :: Python :: 2.7',
+        'Programming Language :: Python :: 3.0'
+    ],
+    keywords='simple tornado rpc',
+    author='Li Xianbin',
+    author_email='sparklxb@163.com',
+    url='https://github.com/sparklxb/simple-tornado-rpc',
+    license='MIT',
+    install_requires=[
+      # -*- Extra requirements: -*-
+    ]
+)

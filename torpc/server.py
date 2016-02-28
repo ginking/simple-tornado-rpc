@@ -6,6 +6,10 @@ from tornado import gen
 from tornado.concurrent import is_future
 from constant import *
 
+def private(f):
+    f.private = True
+    return f
+
 class Connection(object):    
     clients = set()    
     def __init__(self, RPC_TCP_server, stream, address):   
@@ -51,7 +55,7 @@ class RPCTCPServer(TCPServer):
     @gen.coroutine
     def dispatch(self, method_name, args, kw):
         method = getattr(self, method_name, None)
-        if not callable(method):
+        if not callable(method) or getattr(method, 'private', False):
             raise gen.Return({'status': METHOD_NOT_FOUND})
         try:
             response = method(*args, **kw)

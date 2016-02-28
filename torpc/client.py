@@ -55,4 +55,4 @@ class RPCClient(object):
         return functools.partial(self.remote_call, name)
 
     def handle_iostream_close(self):
-        print 'error'
+        pass
